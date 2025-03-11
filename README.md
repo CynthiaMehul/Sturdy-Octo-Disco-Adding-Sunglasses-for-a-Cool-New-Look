@@ -25,4 +25,50 @@ Welcome to Sturdy Octo Disco, a fun and creative project designed to overlay sun
 - Adding flair to your photos for fun.
 - Practicing computer vision workflows.
 
-Feel free to fork, contribute, or customize this project for your creative needs!
+## Code:
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+me = cv2.imread('facepic.png')
+glass = cv2.imread('sunglass.png', cv2.IMREAD_UNCHANGED)
+
+left_eye = (62, 64)
+right_eye = (93, 65)
+
+eye_width = right_eye[0] - left_eye[0] + 40
+eye_height = int(eye_width * (glass.shape[0] / glass.shape[1]))
+
+glass = cv2.resize(glass, (eye_width, eye_height), interpolation=cv2.INTER_AREA)
+
+glassBGR = glass[:, :, 0:3]
+glassMask = glass[:, :, 3]
+
+glassMask = cv2.merge((glassMask, glassMask, glassMask)) / 255
+
+x_offset = left_eye[0] - 20
+y_offset = left_eye[1] - int(eye_height / 2)
+
+roi = me[y_offset:y_offset + eye_height, x_offset:x_offset + eye_width]
+
+if roi.shape[:2] == glassBGR.shape[:2]:
+    maskedFace = roi * (1 - glassMask)
+    maskedGlasses = glassBGR * glassMask
+    roiFinal = np.uint8(maskedFace + maskedGlasses)
+    me[y_offset:y_offset + eye_height, x_offset:x_offset + eye_width] = roiFinal
+
+display_size = (150, 175)
+me_small = cv2.resize(me, display_size, interpolation=cv2.INTER_AREA)
+
+plt.figure(figsize=(5, 5))
+plt.imshow(me_small[:, :, ::-1])
+plt.title("Face with Sunglasses")
+plt.show()
+
+## Output:
+
+![image](https://github.com/user-attachments/assets/05229718-f7ce-4612-bf0f-74cfb4fde768)
+
+![image](https://github.com/user-attachments/assets/42fcb259-9227-448a-8599-6571642dc4a5)
+
+
